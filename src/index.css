@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens, taken from the Cleosushilovers logo:
+ *   cream paper · ink black (nori / chopsticks) · salmon · anchor tan · heart red
+ * Light is the default; `.dark` on <html> switches to the nori-black palette.
+ */
+:root {
+  --background: oklch(0.973 0.009 75);      /* logo cream */
+  --foreground: oklch(0.2 0.006 60);        /* ink black */
+  --card: oklch(0.993 0.004 75);
+  --card-foreground: oklch(0.2 0.006 60);
+  --muted: oklch(0.945 0.012 70);
+  --muted-foreground: oklch(0.47 0.02 60);
+  --border: oklch(0.89 0.018 70);
+  --primary: oklch(0.6 0.17 41);            /* salmon, deepened for text contrast */
+  --primary-foreground: oklch(0.99 0.005 75);
+  --accent: oklch(0.52 0.06 68);            /* anchor tan (text-safe) */
+  --accent-foreground: oklch(0.99 0.005 75);
+  --tan: oklch(0.7 0.06 70);                /* anchor tan (decorative lines) */
+  --heart: oklch(0.55 0.2 27);
+  --destructive: oklch(0.53 0.2 27);
+  --destructive-foreground: oklch(0.99 0.005 75);
+  --success: oklch(0.5 0.11 150);
+  --ring: oklch(0.6 0.17 41);
+  --glow-1: oklch(0.86 0.08 45 / 0.4);
+  --glow-2: oklch(0.88 0.04 75 / 0.55);
+}
+
+.dark {
+  --background: oklch(0.165 0.005 60);      /* nori black */
+  --foreground: oklch(0.95 0.01 75);        /* cream */
+  --card: oklch(0.205 0.006 60);
+  --card-foreground: oklch(0.95 0.01 75);
+  --muted: oklch(0.26 0.008 60);
+  --muted-foreground: oklch(0.73 0.018 70);
+  --border: oklch(0.31 0.01 60);
+  --primary: oklch(0.73 0.15 45);           /* bright salmon */
+  --primary-foreground: oklch(0.17 0.01 45);
+  --accent: oklch(0.78 0.06 72);
+  --accent-foreground: oklch(0.17 0.01 60);
+  --tan: oklch(0.62 0.05 70);
+  --heart: oklch(0.65 0.2 25);
+  --destructive: oklch(0.66 0.19 25);
+  --destructive-foreground: oklch(0.15 0.02 25);
+  --success: oklch(0.72 0.13 150);
+  --ring: oklch(0.73 0.15 45);
+  --glow-1: oklch(0.42 0.09 45 / 0.3);
+  --glow-2: oklch(0.38 0.04 70 / 0.3);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-tan: var(--tan);
+  --color-heart: var(--heart);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-ring: var(--ring);
+}
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  /* Spaced uppercase headings, like the logo's "JAPANESE AUTHENTIC SUSHI". */
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  /* Squared wordmark face, close to the logo lettering. */
+  --font-brand: "Michroma", "Montserrat", ui-sans-serif, sans-serif;
+  /* Softer than Tailwind's default so the shared surface works on small controls too. */
+  --shadow-2xl: 0 22px 44px -20px rgb(30 20 12 / 0.26);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply min-h-dvh bg-background font-sans text-foreground antialiased;
+    background-image:
+      radial-gradient(40rem 28rem at 110% -10%, var(--glow-1), transparent 70%),
+      radial-gradient(36rem 26rem at -20% 30%, var(--glow-2), transparent 70%);
+    background-attachment: fixed;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Uppercase heading flanked by thin tan rules — the logo's tagline treatment. */
+@utility ruled-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  &::before,
+  &::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: var(--tan);
+    opacity: 0.7;
+  }
+}
