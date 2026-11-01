@@ -107,8 +107,8 @@
   }
 }
 
-/* Map tiles are light-only, so soften them in dark mode. */
-.dark .location-map .leaflet-tile-pane {
+/* OpenStreetMap tiles are light-only, so soften them in dark mode. MapTiler has its own dark style. */
+.dark .location-map[data-tiles="osm"] .leaflet-tile-pane {
   filter: brightness(0.75) contrast(1.1) saturate(0.8);
 }
 

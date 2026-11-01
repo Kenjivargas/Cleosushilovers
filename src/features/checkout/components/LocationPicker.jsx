@@ -3,6 +3,8 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Crosshair, ExternalLink, MapPin, X } from 'lucide-react'
 import { Button } from '@/shared/components/ui'
+import { MAPTILER_KEY } from '@/shared/lib/config'
+import { useTheme } from '@/shared/theme/useTheme'
 import {
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
@@ -14,9 +16,39 @@ import {
   toGoogleMapsUrl,
 } from '../services/locationService'
 
-// Standard OpenStreetMap tiles: free and keyless. (CARTO basemaps now require an API key.)
-const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
+// Free, keyless OpenStreetMap tiles. Used when there's no MapTiler key or MapTiler fails.
+const OSM_LAYER = {
+  url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  options: { maxZoom: 19, attribution: OSM_ATTRIBUTION },
+}
+
+// MapTiler "Streets": sharp on high-DPI phones ({r} = @2x) with a matching dark style.
+function mapTilerLayer(theme) {
+  const style = theme === 'dark' ? 'streets-v2-dark' : 'streets-v2'
+  return {
+    url: `https://api.maptiler.com/maps/${style}/{z}/{x}/{y}{r}.png?key=${MAPTILER_KEY}`,
+    options: {
+      tileSize: 512,
+      zoomOffset: -1,
+      maxZoom: 20,
+      crossOrigin: true,
+      attribution: `<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> ${OSM_ATTRIBUTION}`,
+    },
+  }
+}
+
+// MapTiler answers a bad/blocked key with a 403 *image*, which the browser displays
+// without an error event. So check the key once per visit before using its tiles.
+let mapTilerCheck = null
+function checkMapTilerKey() {
+  if (!MAPTILER_KEY) return Promise.resolve(false)
+  mapTilerCheck ??= fetch(`https://api.maptiler.com/maps/streets-v2/tiles.json?key=${MAPTILER_KEY}`)
+    .then((response) => response.ok)
+    .catch(() => false)
+  return mapTilerCheck
+}
 
 // Brand-colored pin drawn with SVG, so no marker image files are needed.
 const pinIcon = L.divIcon({
@@ -34,6 +66,10 @@ export default function LocationPicker({ value, onChange }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const markerRef = useRef(null)
+  const tileLayerRef = useRef(null)
+  const { theme } = useTheme()
+  // 'checking' until the MapTiler key is verified, then 'maptiler' or 'osm'.
+  const [tileSource, setTileSource] = useState(MAPTILER_KEY ? 'checking' : 'osm')
   const onChangeRef = useRef(onChange)
   const [locating, setLocating] = useState(false)
   const [error, setError] = useState(null)
@@ -51,16 +87,45 @@ export default function LocationPicker({ value, onChange }) {
       zoom: isValidLocation(value) ? PINNED_ZOOM : DEFAULT_MAP_ZOOM,
       scrollWheelZoom: false, // page scrolling shouldn't zoom the map by accident
     })
-    L.tileLayer(TILE_URL, { maxZoom: 19, attribution: TILE_ATTRIBUTION }).addTo(map)
     map.on('click', (event) => onChangeRef.current(roundLocation(event.latlng)))
     mapRef.current = map
     return () => {
       map.remove()
       mapRef.current = null
       markerRef.current = null
+      tileLayerRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (tileSource !== 'checking') return
+    let cancelled = false
+    checkMapTilerKey().then((ok) => {
+      if (!cancelled) setTileSource(ok ? 'maptiler' : 'osm')
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [tileSource])
+
+  // Map style follows the site theme. If MapTiler is unusable (bad key, quota used up,
+  // network errors), fall back to OpenStreetMap so checkout keeps working.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || tileSource === 'checking') return
+    const { url, options } = tileSource === 'maptiler' ? mapTilerLayer(theme) : OSM_LAYER
+    const layer = L.tileLayer(url, options)
+    if (tileSource === 'maptiler') {
+      let failures = 0
+      layer.on('tileerror', () => {
+        failures += 1
+        if (failures === 3) setTileSource('osm')
+      })
+    }
+    tileLayerRef.current?.remove()
+    tileLayerRef.current = layer.addTo(map)
+  }, [theme, tileSource])
 
   // Keep the marker in sync with the selected location.
   useEffect(() => {
@@ -108,6 +173,7 @@ export default function LocationPicker({ value, onChange }) {
         ref={containerRef}
         role="application"
         aria-label="Map. Tap to place your delivery pin."
+        data-tiles={tileSource}
         className="location-map relative z-0 h-64 overflow-hidden rounded-3xl border border-border sm:h-72"
       />
 
