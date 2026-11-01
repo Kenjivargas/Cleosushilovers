@@ -2,6 +2,7 @@ import { readJson, removeKey, writeJson } from '@/shared/lib/storage'
 import { formatCents, formatPrice } from '@/shared/lib/money'
 import { SHOP_NAME } from '@/shared/lib/config'
 import { cartTotalCents, lineTotalCents } from '@/features/cart/services/cartService'
+import { isValidLocation, toGoogleMapsUrl } from './locationService'
 
 const STORAGE_KEY = 'cleo-last-order'
 
@@ -63,5 +64,6 @@ export function formatOrderAsText(order) {
     `Contact: ${customer.phone}`,
     `Address: ${customer.address}`,
     ...(customer.notes ? [`Notes: ${customer.notes}`] : []),
+    ...(isValidLocation(customer.location) ? [`Map pin: ${toGoogleMapsUrl(customer.location)}`] : []),
   ].join('\n')
 }

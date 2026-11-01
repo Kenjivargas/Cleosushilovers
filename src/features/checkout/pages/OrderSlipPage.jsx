@@ -6,6 +6,7 @@ import { MESSENGER_URL } from '@/shared/lib/config'
 import { useCart } from '@/features/cart/hooks/useCart'
 import { CheckoutSteps } from '../components/CheckoutSteps'
 import { useOrderSlip } from '../hooks/useOrderSlip'
+import { isValidLocation } from '../services/locationService'
 import { clearLastOrder, formatOrderAsText, loadLastOrder } from '../services/orderSlipService'
 
 export function OrderSlipPage() {
@@ -17,6 +18,8 @@ export function OrderSlipPage() {
   const [copied, setCopied] = useState(false)
 
   if (!order) return <Navigate to="/order" replace />
+
+  const hasPin = isValidLocation(order.customer.location)
 
   const handleDownload = () => {
     slip.download()
@@ -88,6 +91,12 @@ export function OrderSlipPage() {
               <li>
                 <span className="font-semibold text-foreground">3.</span> Attach the image and send it to us.
               </li>
+              {hasPin && (
+                <li>
+                  <span className="font-semibold text-foreground">4.</span> Tap “Copy order details” and paste it in
+                  the chat too, so we get a tappable link to your map pin.
+                </li>
+              )}
             </ol>
 
             <div className="grid gap-3">
@@ -105,7 +114,7 @@ export function OrderSlipPage() {
                 <MessageCircle className="size-5 text-[#0a7cff]" />
                 Open Messenger
               </Button>
-              <Button variant="ghost" onClick={handleCopy}>
+              <Button variant={hasPin ? 'secondary' : 'ghost'} onClick={handleCopy}>
                 {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
                 {copied ? 'Copied!' : 'Copy order details'}
               </Button>

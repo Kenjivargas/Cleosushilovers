@@ -1,6 +1,7 @@
 import { formatCents, formatPrice } from '@/shared/lib/money'
 import { LOGO_URL, SHOP_MOTTO } from '@/shared/lib/config'
 import { lineTotalCents } from '@/features/cart/services/cartService'
+import { formatCoordinates, isValidLocation, toGoogleMapsUrl } from './locationService'
 import { formatOrderDate } from './orderSlipService'
 
 // The slip is drawn on a canvas so it looks the same on every device and
@@ -24,6 +25,7 @@ const COLORS = {
 const SANS = '"Plus Jakarta Sans", system-ui, sans-serif'
 const DISPLAY = '"Montserrat", system-ui, sans-serif'
 const LOGO_SIZE = 340
+const QR_SIZE = 220
 
 const FONTS = {
   title: `800 30px ${DISPLAY}`,
@@ -77,7 +79,7 @@ function wrapText(ctx, text, maxWidth) {
  * Lays out (and when `draw` is true, paints) the slip. Returns the total height,
  * so the same code is used once to measure and once to draw.
  */
-function paint(ctx, order, logo, background, draw) {
+function paint(ctx, order, { logo, qr, background }, draw) {
   const text = (value, x, y, font, color = COLORS.ink, align = 'left') => {
     ctx.font = font
     if (!draw) return
@@ -168,6 +170,25 @@ function paint(ctx, order, logo, background, draw) {
     y += (lines.length - 1) * 44 + 64
   }
 
+  // Map pin: QR code (opens Google Maps) beside the coordinates.
+  if (qr) {
+    const location = customer.location
+    const textX = PAD + QR_SIZE + 40
+    const textWidth = CONTENT_WIDTH - QR_SIZE - 40
+    fill(PAD - 12, y - 12, QR_SIZE + 24, QR_SIZE + 24, '#ffffff', 20)
+    if (draw) ctx.drawImage(qr, PAD, y, QR_SIZE, QR_SIZE)
+    let ty = y + 34
+    text('MAP PIN', textX, ty, FONTS.label, COLORS.tan)
+    ty += 46
+    text(formatCoordinates(location), textX, ty, FONTS.value)
+    ty += 48
+    wrap('Scan to open the exact delivery spot in Google Maps.', FONTS.small, textWidth).forEach((line) => {
+      text(line, textX, ty, FONTS.small, COLORS.muted)
+      ty += 36
+    })
+    y += QR_SIZE + 64
+  }
+
   // Footer note
   const footerLines = wrap(FOOTER_TEXT, FONTS.footer, CONTENT_WIDTH - 96)
   const boxHeight = footerLines.length * 40 + 60
@@ -193,18 +214,36 @@ function sampleBackground(logo) {
   }
 }
 
+async function createLocationQr(location) {
+  if (!isValidLocation(location)) return null
+  try {
+    // Loaded on demand so customers browsing the menu never download it.
+    const { default: QRCode } = await import('qrcode')
+    const canvas = document.createElement('canvas')
+    await QRCode.toCanvas(canvas, toGoogleMapsUrl(location), {
+      width: QR_SIZE,
+      margin: 0,
+      errorCorrectionLevel: 'M',
+      color: { dark: COLORS.ink, light: '#ffffff' },
+    })
+    return canvas
+  } catch {
+    return null // the coordinates are still in the copied text
+  }
+}
+
 /** Renders the order slip as a PNG blob. */
 export async function renderOrderSlip(order) {
-  const [logo] = await Promise.all([loadLogo(), ensureFontsLoaded()])
+  const [logo, qr] = await Promise.all([loadLogo(), createLocationQr(order.customer.location), ensureFontsLoaded()])
+  const assets = { logo, qr, background: sampleBackground(logo) }
 
   const measureCanvas = document.createElement('canvas')
-  const background = sampleBackground(logo)
-  const height = paint(measureCanvas.getContext('2d'), order, logo, background, false)
+  const height = paint(measureCanvas.getContext('2d'), order, assets, false)
 
   const canvas = document.createElement('canvas')
   canvas.width = WIDTH
   canvas.height = height
-  paint(canvas.getContext('2d'), order, logo, background, true)
+  paint(canvas.getContext('2d'), order, assets, true)
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Could not create the image.'))), 'image/png')

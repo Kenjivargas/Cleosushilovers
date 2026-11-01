@@ -1,13 +1,17 @@
 import { readJson, writeJson } from '@/shared/lib/storage'
+import { isValidLocation, roundLocation } from './locationService'
 
 const STORAGE_KEY = 'cleo-delivery-details'
 
-export const EMPTY_DELIVERY_DETAILS = { fullName: '', phone: '', address: '', notes: '' }
+// `location` is the optional map pin: { lat, lng } or null.
+export const EMPTY_DELIVERY_DETAILS = { fullName: '', phone: '', address: '', notes: '', location: null }
 
 /** Returning customers get their last details pre-filled. */
 export function loadDeliveryDetails() {
   const saved = readJson(localStorage, STORAGE_KEY, {})
-  return { ...EMPTY_DELIVERY_DETAILS, ...(saved && typeof saved === 'object' ? saved : {}) }
+  const details = { ...EMPTY_DELIVERY_DETAILS, ...(saved && typeof saved === 'object' ? saved : {}) }
+  if (!isValidLocation(details.location)) details.location = null
+  return details
 }
 
 export function saveDeliveryDetails(details) {
@@ -24,6 +28,7 @@ export function cleanDeliveryDetails(details) {
     phone: details.phone.trim(),
     address: details.address.trim(),
     notes: details.notes.trim(),
+    location: isValidLocation(details.location) ? roundLocation(details.location) : null,
   }
 }
 

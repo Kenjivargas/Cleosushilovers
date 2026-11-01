@@ -107,6 +107,15 @@
   }
 }
 
+/* Map tiles are light-only, so soften them in dark mode. */
+.dark .location-map .leaflet-tile-pane {
+  filter: brightness(0.75) contrast(1.1) saturate(0.8);
+}
+
+.location-map .leaflet-control-attribution {
+  font-size: 10px;
+}
+
 /* Uppercase heading flanked by thin tan rules — the logo's tagline treatment. */
 @utility ruled-heading {
   display: flex;
