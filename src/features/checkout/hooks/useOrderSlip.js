@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { isIOS } from '@/shared/lib/device'
 import { renderOrderSlip } from '../services/orderSlipImage'
 import { getSlipFileName } from '../services/orderSlipService'
 
-/** Generates the slip image for an order and exposes download / share actions. */
+/** Generates the slip image for an order and exposes a "save to photos" action. */
 export function useOrderSlip(order) {
   const [blob, setBlob] = useState(null)
   const [imageUrl, setImageUrl] = useState(null)
@@ -45,16 +46,30 @@ export function useOrderSlip(order) {
     link.remove()
   }, [imageUrl, fileName])
 
-  // Returns false if the share sheet was dismissed or failed.
-  const share = useCallback(async () => {
-    if (!file) return false
-    try {
-      await navigator.share({ files: [file], title: 'My Cleosushilovers order' })
-      return true
-    } catch {
-      return false
-    }
-  }, [file])
+  // iPhones save downloads to the Files app, not Photos. Their share sheet has
+  // "Save Image", which goes straight to Photos, so use it there.
+  const savesViaShareSheet = canShare && isIOS()
 
-  return { status, imageUrl, fileName, download, share, canShare }
+  /**
+   * Saves the slip where customers find it: share sheet on iPhone, download elsewhere
+   * (Android galleries show downloaded images). Resolves to 'saved' or 'cancelled'.
+   */
+  const saveToPhotos = useCallback(async () => {
+    if (!file) return 'cancelled'
+    if (!savesViaShareSheet) {
+      download()
+      return 'saved'
+    }
+    try {
+      await navigator.share({ files: [file] })
+      return 'saved'
+    } catch (error) {
+      if (error?.name === 'AbortError') return 'cancelled'
+      // Share sheet unavailable (e.g. inside some in-app browsers): download instead.
+      download()
+      return 'saved'
+    }
+  }, [file, savesViaShareSheet, download])
+
+  return { status, imageUrl, fileName, saveToPhotos, savesViaShareSheet }
 }

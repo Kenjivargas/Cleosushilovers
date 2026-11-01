@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { Check, Copy, Download, MessageCircle, PencilLine, RotateCcw, Share2 } from 'lucide-react'
+import { Check, CircleCheck, Copy, ImageDown, MessageCircle, PencilLine, RotateCcw } from 'lucide-react'
 import { Alert, Button, Card, Spinner } from '@/shared/components/ui'
 import { MESSENGER_URL } from '@/shared/lib/config'
 import { useCart } from '@/features/cart/hooks/useCart'
@@ -14,20 +14,18 @@ export function OrderSlipPage() {
   const { clearCart } = useCart()
   const [order] = useState(loadLastOrder)
   const slip = useOrderSlip(order)
-  const [downloaded, setDownloaded] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
 
   if (!order) return <Navigate to="/order" replace />
 
   const hasPin = isValidLocation(order.customer.location)
 
-  const handleDownload = () => {
-    slip.download()
-    setDownloaded(true)
-  }
-
-  const handleShare = async () => {
-    if (await slip.share()) setDownloaded(true)
+  const handleSave = async () => {
+    setSaving(true)
+    if ((await slip.saveToPhotos()) === 'saved') setSaved(true)
+    setSaving(false)
   }
 
   const handleCopy = async () => {
@@ -58,7 +56,7 @@ export function OrderSlipPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
-        <Card padding="sm" className="overflow-hidden">
+        <Card padding="sm" className="space-y-3 overflow-hidden">
           {slip.status === 'loading' && (
             <div className="grid aspect-[3/4] place-items-center text-muted-foreground" role="status">
               <Spinner className="size-8" label="Creating your order slip" />
@@ -70,50 +68,85 @@ export function OrderSlipPage() {
             </Alert>
           )}
           {slip.status === 'ready' && (
-            <img
-              src={slip.imageUrl}
-              alt={`Order slip ${order.ref}`}
-              className="w-full rounded-2xl border border-border"
-            />
+            <>
+              <img
+                src={slip.imageUrl}
+                alt={`Order slip ${order.ref}`}
+                className="w-full rounded-2xl border border-border"
+              />
+              <p className="px-2 pb-1 text-center text-sm text-muted-foreground">
+                Tip: you can also <span className="font-semibold text-foreground">press and hold</span> the image and
+                choose <span className="font-semibold text-foreground">Save to Photos</span>.
+              </p>
+            </>
           )}
         </Card>
 
-        <div className="space-y-4 lg:sticky lg:top-24">
+        {/* Actions come first on phones so customers don't scroll past the long slip to find them. */}
+        <div className="order-first space-y-4 lg:sticky lg:top-24 lg:order-none">
           <Card className="space-y-4">
             <h2 className="font-display text-xl font-semibold">How to send your order</h2>
             <ol className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <span className="font-semibold text-foreground">1.</span> Download (or share) your order slip.
+              <li className={saved ? 'line-through decoration-success/60' : undefined}>
+                <span className="font-semibold text-foreground">1.</span> Save your order slip to your Photos.
               </li>
               <li>
                 <span className="font-semibold text-foreground">2.</span> Open our page on Messenger.
               </li>
               <li>
-                <span className="font-semibold text-foreground">3.</span> Attach the image and send it to us.
+                <span className="font-semibold text-foreground">3.</span> Send the photo in the chat.
+                {hasPin && ' Paste your copied order details too, so we get your map pin.'}
               </li>
-              {hasPin && (
-                <li>
-                  <span className="font-semibold text-foreground">4.</span> Tap “Copy order details” and paste it in
-                  the chat too, so we get a tappable link to your map pin.
-                </li>
-              )}
             </ol>
 
+            {saved && (
+              <p className="flex items-center gap-2 rounded-2xl bg-success/10 px-4 py-3 text-sm font-semibold">
+                <CircleCheck className="size-5 shrink-0 text-success" aria-hidden="true" />
+                Saved! Now send it to us on Messenger.
+              </p>
+            )}
+
             <div className="grid gap-3">
-              <Button size="lg" onClick={handleDownload} disabled={slip.status !== 'ready'}>
-                {downloaded ? <Check className="size-5" /> : <Download className="size-5" />}
-                {downloaded ? 'Downloaded' : 'Download order slip'}
-              </Button>
-              {slip.canShare && (
-                <Button variant="secondary" onClick={handleShare}>
-                  <Share2 className="size-5" />
-                  Share image
-                </Button>
+              {saved ? (
+                <>
+                  <Button as="a" href={MESSENGER_URL} target="_blank" rel="noopener noreferrer" size="lg">
+                    <MessageCircle className="size-5" />
+                    Open Messenger
+                  </Button>
+                  <Button variant="secondary" onClick={handleSave} loading={saving}>
+                    {!saving && <ImageDown className="size-5" />}
+                    Save again
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    <Button
+                      size="lg"
+                      className="w-full"
+                      onClick={handleSave}
+                      loading={saving}
+                      disabled={slip.status !== 'ready'}
+                    >
+                      {!saving && <ImageDown className="size-5" />}
+                      Save to Photos
+                    </Button>
+                    <p className="px-2 text-center text-xs text-muted-foreground">
+                      {slip.savesViaShareSheet ? (
+                        <>
+                          In the menu that opens, tap <span className="font-semibold text-foreground">Save Image</span>.
+                        </>
+                      ) : (
+                        "It'll be saved to your phone's gallery."
+                      )}
+                    </p>
+                  </div>
+                  <Button as="a" href={MESSENGER_URL} target="_blank" rel="noopener noreferrer" variant="secondary" size="lg">
+                    <MessageCircle className="size-5 text-[#0a7cff]" />
+                    Open Messenger
+                  </Button>
+                </>
               )}
-              <Button as="a" href={MESSENGER_URL} target="_blank" rel="noopener noreferrer" variant="secondary" size="lg">
-                <MessageCircle className="size-5 text-[#0a7cff]" />
-                Open Messenger
-              </Button>
               <Button variant={hasPin ? 'secondary' : 'ghost'} onClick={handleCopy}>
                 {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
                 {copied ? 'Copied!' : 'Copy order details'}
