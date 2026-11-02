@@ -11,7 +11,7 @@ export function AdminLayout({ children }) {
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-[4.5rem] max-w-5xl items-center gap-3 px-4">
+        <div className="flex h-[4.5rem] items-center gap-3 px-4 sm:px-6 lg:px-8">
           <div className="min-w-0 flex-1">
             <BrandMark to="/admin" subtitle="Admin" />
           </div>

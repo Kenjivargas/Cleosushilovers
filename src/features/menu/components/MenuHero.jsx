@@ -1,5 +1,6 @@
 import { Anchor, Heart } from 'lucide-react'
 import { Card } from '@/shared/components/ui'
+import { ShopLinks } from '@/shared/components/shop/ShopLinks'
 import { LOGO_URL, SHOP_MOTTO, SHOP_NAME } from '@/shared/lib/config'
 
 export function MenuHero() {
@@ -33,6 +34,7 @@ export function MenuHero() {
           <p className="max-w-lg text-muted-foreground">
             Add what you're craving, confirm your order, then send us your order slip on Messenger.
           </p>
+          <ShopLinks className="mx-auto w-full max-w-md pt-1 sm:mx-0" />
         </div>
       </div>
     </Card>

@@ -1,6 +1,10 @@
-// Where the map opens before a pin is placed (Metro Manila). Change to the shop's area if needed.
-export const DEFAULT_MAP_CENTER = { lat: 14.5995, lng: 120.9842 }
-export const DEFAULT_MAP_ZOOM = 12
+import { SHOP_LOCATION } from '@/shared/lib/config'
+
+export { toGoogleMapsUrl } from '@/shared/lib/maps'
+
+// Before a pin is placed, the map opens around the shop, where most customers are.
+export const DEFAULT_MAP_CENTER = SHOP_LOCATION
+export const DEFAULT_MAP_ZOOM = 14
 export const PINNED_ZOOM = 17
 
 /** True for a { lat, lng } pair within valid ranges. */
@@ -21,11 +25,6 @@ export function roundLocation({ lat, lng }) {
 
 export function formatCoordinates({ lat, lng }) {
   return `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-}
-
-/** Link that opens the pin in Google Maps (app or web), ready for navigation. */
-export function toGoogleMapsUrl({ lat, lng }) {
-  return `https://www.google.com/maps/search/?api=1&query=${lat.toFixed(6)},${lng.toFixed(6)}`
 }
 
 /** Asks the browser for the device's position. Rejects with a customer-friendly message. */
