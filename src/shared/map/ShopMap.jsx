@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { SHOP_NAME } from '@/shared/lib/config'
-import { pinIcon } from './baseTiles'
+import { keepMapSized, pinIcon } from './baseTiles'
 import { useBaseTiles } from './useBaseTiles'
 
 /** Small map with the shop's pin. Loaded lazily. */
@@ -20,7 +20,9 @@ export default function ShopMap({ location, className }) {
     })
     L.marker([location.lat, location.lng], { icon: pinIcon, title: SHOP_NAME, keyboard: false }).addTo(map)
     mapRef.current = map
+    const stopResizeWatch = keepMapSized(map, containerRef.current)
     return () => {
+      stopResizeWatch()
       map.remove()
       mapRef.current = null
     }

@@ -3,7 +3,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Crosshair, ExternalLink, MapPin, X } from 'lucide-react'
 import { Button } from '@/shared/components/ui'
-import { pinIcon } from '@/shared/map/baseTiles'
+import { keepMapSized, pinIcon } from '@/shared/map/baseTiles'
 import { useBaseTiles } from '@/shared/map/useBaseTiles'
 import {
   DEFAULT_MAP_CENTER,
@@ -40,7 +40,9 @@ export default function LocationPicker({ value, onChange }) {
     })
     map.on('click', (event) => onChangeRef.current(roundLocation(event.latlng)))
     mapRef.current = map
+    const stopResizeWatch = keepMapSized(map, containerRef.current)
     return () => {
+      stopResizeWatch()
       map.remove()
       mapRef.current = null
       markerRef.current = null

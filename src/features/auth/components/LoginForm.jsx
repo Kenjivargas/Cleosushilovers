@@ -8,10 +8,12 @@ export function LoginForm() {
     <Card as="form" onSubmit={form.handleSubmit} noValidate className="space-y-5">
       {form.error && <Alert tone="error">{form.error}</Alert>}
       <TextField
-        label="Email"
-        type="email"
-        autoComplete="email"
-        inputMode="email"
+        label="Email or username"
+        type="text"
+        autoComplete="username"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
         required
         value={form.email}
         onChange={(e) => form.setEmail(e.target.value)}

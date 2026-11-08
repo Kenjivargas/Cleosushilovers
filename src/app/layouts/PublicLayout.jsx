@@ -15,8 +15,8 @@ export function PublicLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="flex h-[4.5rem] items-center gap-3 px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
+        <div className="flex h-16 items-center gap-2 px-4 sm:h-[4.5rem] sm:gap-3 sm:px-6 lg:px-8">
           <div className="min-w-0 flex-1">
             <BrandMark />
           </div>
@@ -25,7 +25,7 @@ export function PublicLayout() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-32">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-4 pb-32 sm:pt-6">
         <Outlet />
       </main>
 

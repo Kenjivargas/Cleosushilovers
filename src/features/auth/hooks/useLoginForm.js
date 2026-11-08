@@ -10,7 +10,7 @@ export function useLoginForm() {
   const handleSubmit = async (event) => {
     event.preventDefault()
     if (!email.trim() || !password) {
-      setError('Enter your email and password.')
+      setError('Enter your email or username and password.')
       return
     }
     setSubmitting(true)
@@ -18,7 +18,7 @@ export function useLoginForm() {
     try {
       await signIn({ email, password })
     } catch (err) {
-      setError(err?.message === 'Invalid login credentials' ? 'Wrong email or password.' : err?.message)
+      setError(err?.message === 'Invalid login credentials' ? 'Wrong username or password.' : err?.message)
     } finally {
       setSubmitting(false)
     }

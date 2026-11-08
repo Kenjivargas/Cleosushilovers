@@ -11,8 +11,17 @@ export function onAuthChange(callback) {
   return () => data.subscription.unsubscribe()
 }
 
+// Supabase Auth needs an email, so a bare username like "ballesterosadmin"
+// signs in as "ballesterosadmin@cleosushilovers.app".
+const USERNAME_EMAIL_DOMAIN = 'cleosushilovers.app'
+
+export function toLoginEmail(emailOrUsername) {
+  const value = emailOrUsername.trim().toLowerCase()
+  return value.includes('@') ? value : `${value}@${USERNAME_EMAIL_DOMAIN}`
+}
+
 export async function signIn({ email, password }) {
-  const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+  const { error } = await supabase.auth.signInWithPassword({ email: toLoginEmail(email), password })
   if (error) throw error
 }
 

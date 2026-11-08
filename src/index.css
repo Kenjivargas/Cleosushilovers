@@ -79,6 +79,23 @@
   --font-brand: "Michroma", "Montserrat", ui-sans-serif, sans-serif;
   /* Softer than Tailwind's default so the shared surface works on small controls too. */
   --shadow-2xl: 0 22px 44px -20px rgb(30 20 12 / 0.26);
+
+  --animate-fade-in: fade-in 180ms ease-out;
+  --animate-zoom-in: zoom-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+  }
+  @keyframes zoom-in {
+    from { opacity: 0; transform: scale(0.94); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-zoom-in {
+    animation: none;
+  }
 }
 
 @layer base {
@@ -88,10 +105,19 @@
 
   body {
     @apply min-h-dvh bg-background font-sans text-foreground antialiased;
+    overflow-x: clip;
+  }
+
+  /* Fixed glow layer. `background-attachment: fixed` is ignored on iOS and janky on Android. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background-image:
       radial-gradient(40rem 28rem at 110% -10%, var(--glow-1), transparent 70%),
       radial-gradient(36rem 26rem at -20% 30%, var(--glow-2), transparent 70%);
-    background-attachment: fixed;
   }
 
   button:not(:disabled),

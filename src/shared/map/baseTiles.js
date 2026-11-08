@@ -37,6 +37,19 @@ export function checkMapTilerKey() {
 
 export const INITIAL_TILE_SOURCE = MAPTILER_KEY ? 'checking' : 'osm'
 
+/**
+ * Leaflet measures its box once, when created. If the box was still 0px tall then
+ * (lazy loading, layout still settling) the tiles land outside the visible area.
+ * Re-measure whenever the box resizes (invalidateSize keeps the same centre).
+ * Returns a cleanup function.
+ */
+export function keepMapSized(map, container) {
+  if (!('ResizeObserver' in window)) return () => {}
+  const observer = new ResizeObserver(() => map.invalidateSize({ animate: false }))
+  observer.observe(container)
+  return () => observer.disconnect()
+}
+
 // Brand-colored pin drawn with SVG, so no marker image files are needed.
 export const pinIcon = L.divIcon({
   className: '',

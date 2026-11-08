@@ -1,10 +1,11 @@
 import { lazy, Suspense } from 'react'
-import { Navigation, Store } from 'lucide-react'
+import { MessageCircle, Navigation, Store } from 'lucide-react'
 import { Button, Card } from '@/shared/components/ui'
-import { SHOP_LOCATION } from '@/shared/lib/config'
+import { MESSENGER_URL, SHOP_LOCATION } from '@/shared/lib/config'
 import { toGoogleDirectionsUrl } from '@/shared/lib/maps'
 import { useInView } from '@/shared/hooks/useInView'
-import { ShopLinks } from './ShopLinks'
+
+export const FIND_US_ID = 'find-us'
 
 // The map code only downloads when this section scrolls into view.
 const ShopMap = lazy(() => import('@/shared/map/ShopMap'))
@@ -17,7 +18,13 @@ export function FindUsSection() {
   const [ref, inView] = useInView()
 
   return (
-    <Card as="section" padding="none" aria-labelledby="find-us-title" className="w-full overflow-hidden text-left">
+    <Card
+      as="section"
+      id={FIND_US_ID}
+      padding="none"
+      aria-labelledby="find-us-title"
+      className="w-full scroll-mt-24 overflow-hidden text-left"
+    >
       <div ref={ref} className="grid sm:grid-cols-2">
         <div className="relative h-48 border-b border-border sm:h-auto sm:min-h-64 sm:border-r sm:border-b-0">
           {inView ? (
@@ -49,7 +56,10 @@ export function FindUsSection() {
             <Navigation className="size-4" aria-hidden="true" />
             Get directions
           </Button>
-          <ShopLinks />
+          <Button as="a" href={MESSENGER_URL} target="_blank" rel="noopener noreferrer" variant="secondary" className="w-full">
+            <MessageCircle className="size-4 text-[#0a7cff]" aria-hidden="true" />
+            Message us before pick-up
+          </Button>
         </div>
       </div>
     </Card>

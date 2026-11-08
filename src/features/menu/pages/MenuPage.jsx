@@ -16,7 +16,7 @@ export function MenuPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <MenuHero />
 
       {status === 'loading' && <MenuSkeleton />}
@@ -46,17 +46,17 @@ export function MenuPage() {
       {status === 'success' && categories.length > 0 && (
         <>
           <CategoryNav categories={categories} activeId={activeId} />
-          <div className="space-y-10">
+          <div className="space-y-8 sm:space-y-10">
             {categories.map((category) => (
               <section
                 key={category.id}
                 id={categoryAnchorId(category.id)}
                 data-section-id={category.id}
                 aria-labelledby={`${categoryAnchorId(category.id)}-title`}
-                className="scroll-mt-36 space-y-4"
+                className="scroll-mt-32 space-y-4 sm:scroll-mt-36"
               >
                 <SectionHeading id={`${categoryAnchorId(category.id)}-title`}>{category.name}</SectionHeading>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                   {category.products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}

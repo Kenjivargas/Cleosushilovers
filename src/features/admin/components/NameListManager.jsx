@@ -36,7 +36,7 @@ export function NameListManager({ title, description, items, counts, onCreate, o
   }
 
   return (
-    <Card className="space-y-4">
+    <Card padding="none" className="min-w-0 space-y-4 p-4 sm:p-6">
       <div>
         <h2 className="font-display text-lg font-bold">{title}</h2>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
@@ -66,7 +66,7 @@ export function NameListManager({ title, description, items, counts, onCreate, o
               </form>
             ) : (
               <div className="flex items-center gap-1">
-                <span className="min-w-0 flex-1 truncate font-medium">
+                <span className="min-w-0 flex-1 font-medium break-words">
                   {item.name}
                   {counts && <span className="ml-2 text-sm text-muted-foreground">({counts.get(item.id) ?? 0})</span>}
                 </span>

@@ -135,7 +135,7 @@ export function AdminMenuPage() {
                 {groups.map(({ category, products }) => (
                   <section key={category.id} className="space-y-3" aria-label={category.name}>
                     <SectionHeading>{category.name}</SectionHeading>
-                    <ul className="grid gap-3 md:grid-cols-2">
+                    <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       {products.map((product) => (
                         <AdminProductCard
                           key={product.id}
@@ -154,7 +154,7 @@ export function AdminMenuPage() {
         )}
 
         {menu.status === 'success' && tab === 'categories' && (
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <NameListManager
               title="Categories"
               description="Sections of your menu, in the order customers see them. A category must be empty before it can be deleted."
