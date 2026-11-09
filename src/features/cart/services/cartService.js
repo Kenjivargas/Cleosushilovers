@@ -40,28 +40,36 @@ export function cartTotalCents(items) {
 /**
  * Brings saved cart lines in line with the live menu: drops products that were
  * removed or sold out and refreshes names/prices the admin changed.
- * Returns the new items plus human-readable notes about what changed.
+ * Also picks up each product's current photo.
+ * Returns the new items, human-readable notes about what changed, and whether anything changed at all.
  */
 export function reconcileCart(items, products) {
   const byId = new Map(products.map((p) => [p.id, p]))
   const changes = []
   const next = []
+  let changed = false
 
   for (const item of items) {
     const product = byId.get(item.productId)
     if (!product) {
       changes.push(`${item.name} is no longer on the menu and was removed.`)
+      changed = true
       continue
     }
     if (!product.isAvailable) {
       changes.push(`${product.name} is sold out and was removed.`)
+      changed = true
       continue
     }
     if (toCents(product.price) !== toCents(item.price)) {
       changes.push(`${product.name} price was updated.`)
     }
-    next.push({ ...item, name: product.name, price: product.price })
+    const imageUrl = product.imageUrl ?? null
+    if (product.name !== item.name || toCents(product.price) !== toCents(item.price) || imageUrl !== (item.imageUrl ?? null)) {
+      changed = true
+    }
+    next.push({ ...item, name: product.name, price: product.price, imageUrl })
   }
 
-  return { items: next, changes }
+  return { items: next, changes, changed }
 }

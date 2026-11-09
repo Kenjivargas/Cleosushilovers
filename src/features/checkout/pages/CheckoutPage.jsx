@@ -20,18 +20,19 @@ export function CheckoutPage() {
     <div className="mx-auto max-w-4xl space-y-6">
       <CheckoutSteps current={1} />
       <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">Delivery details</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Delivery details</h1>
         <p className="text-muted-foreground">Where should we bring your sushi?</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
         <DeliveryForm
           values={form.values}
           errors={form.errors}
           onFieldChange={form.setField}
           onSubmit={form.handleSubmit}
         />
-        <div className="lg:sticky lg:top-24">
+        {/* On phones the summary comes first, so people see what they're ordering before the form. */}
+        <div className="order-first lg:order-none lg:sticky lg:top-24">
           <OrderSummaryCard items={items} totalCents={totalCents} />
         </div>
       </div>

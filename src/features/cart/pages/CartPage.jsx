@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ShoppingBag } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, Trash2 } from 'lucide-react'
 import { Alert, Button, Card, EmptyState } from '@/shared/components/ui'
 import { formatCents } from '@/shared/lib/money'
 import { CheckoutSteps } from '@/features/checkout/components/CheckoutSteps'
@@ -10,7 +10,9 @@ import { useCartSync } from '../hooks/useCartSync'
 export function CartPage() {
   const navigate = useNavigate()
   const { items, itemCount, totalCents, setQuantity, clearCart } = useCart()
-  const { ready, menuError, changes } = useCartSync()
+  const { ready, menuError, changes, products } = useCartSync()
+  // Prefer the live menu photo (the admin may have changed it); fall back to the one saved with the item.
+  const imageFor = (item) => products.find((p) => p.id === item.productId)?.imageUrl ?? item.imageUrl ?? null
 
   if (items.length === 0) {
     return (
@@ -34,16 +36,17 @@ export function CartPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <CheckoutSteps current={0} />
 
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Review your order</h1>
+      <div>
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Review your order</h1>
+        <div className="flex items-center justify-between gap-4">
           <p className="text-muted-foreground">
             {itemCount} {itemCount === 1 ? 'item' : 'items'}
           </p>
+          <Button variant="ghost" size="sm" onClick={clearCart} className="-mr-3 whitespace-nowrap text-destructive">
+            <Trash2 className="size-4" aria-hidden="true" />
+            Clear all
+          </Button>
         </div>
-        <Button variant="ghost" size="sm" onClick={clearCart} className="whitespace-nowrap text-destructive">
-          Clear all
-        </Button>
       </div>
 
       {changes.length > 0 && <SyncNotice changes={changes} />}
@@ -53,17 +56,18 @@ export function CartPage() {
         </Alert>
       )}
 
-      <Card>
+      <Card padding="sm" className="sm:p-6">
         <ul className="divide-y divide-border">
           {items.map((item) => (
             <CartItemRow
               key={item.productId}
               item={item}
+              imageUrl={imageFor(item)}
               onQuantityChange={(quantity) => setQuantity(item.productId, quantity)}
             />
           ))}
         </ul>
-        <div className="mt-2 flex items-center justify-between border-t border-border pt-4">
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
           <span className="text-lg font-semibold">Total</span>
           <span className="text-2xl font-bold text-primary tabular-nums">{formatCents(totalCents)}</span>
         </div>

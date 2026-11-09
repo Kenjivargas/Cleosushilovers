@@ -14,11 +14,9 @@ export function useCartSync() {
     if (status !== 'success' || synced.current) return
     synced.current = true
     const result = reconcileCart(items, products)
-    if (result.changes.length > 0) {
-      replaceItems(result.items)
-      setChanges(result.changes)
-    }
+    if (result.changed) replaceItems(result.items)
+    if (result.changes.length > 0) setChanges(result.changes)
   }, [status, items, products, replaceItems])
 
-  return { ready: status !== 'loading', menuError: status === 'error', changes }
+  return { ready: status !== 'loading', menuError: status === 'error', changes, products }
 }

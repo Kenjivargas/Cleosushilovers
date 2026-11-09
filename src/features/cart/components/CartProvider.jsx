@@ -12,7 +12,10 @@ function cartReducer(items, action) {
           i.productId === product.id ? { ...i, quantity: Math.min(MAX_QUANTITY, i.quantity + 1) } : i,
         )
       }
-      return [...items, { productId: product.id, name: product.name, price: product.price, quantity: 1 }]
+      return [
+        ...items,
+        { productId: product.id, name: product.name, price: product.price, imageUrl: product.imageUrl ?? null, quantity: 1 },
+      ]
     }
     case 'setQuantity': {
       const quantity = clampQuantity(action.quantity)
