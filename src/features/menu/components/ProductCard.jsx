@@ -9,7 +9,8 @@ import { useCart } from '@/features/cart/hooks/useCart'
 import { ProductImage } from './ProductImage'
 import { ProductImageViewer } from './ProductImageViewer'
 
-const imageSize = 'size-24 shrink-0 self-start rounded-2xl min-[380px]:size-28 sm:aspect-[4/3] sm:size-auto sm:w-full'
+// Cards sit two per row on phones, so the photo goes on top and fills the card width.
+const imageSize = 'aspect-square w-full rounded-xl sm:aspect-[4/3] sm:rounded-2xl'
 
 export function ProductCard({ product }) {
   const { getQuantity, addItem, setQuantity } = useCart()
@@ -18,7 +19,7 @@ export function ProductCard({ product }) {
   const [viewerOpen, setViewerOpen] = useState(false)
 
   return (
-    <Card padding="sm" as="article" className="flex gap-3.5 sm:flex-col sm:gap-4">
+    <Card padding="sm" as="article" className="flex flex-col gap-2.5 sm:gap-4">
       {product.imageUrl ? (
         <button
           type="button"
@@ -53,13 +54,13 @@ export function ProductCard({ product }) {
         )}
 
         <div className="min-w-0">
-          <h3 className="line-clamp-2 leading-snug font-semibold">{product.name}</h3>
+          <h3 className="line-clamp-2 text-sm leading-snug font-semibold sm:text-base">{product.name}</h3>
           {product.description && (
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
+            <p className="mt-1 line-clamp-2 hidden text-sm text-muted-foreground sm:block">{product.description}</p>
           )}
         </div>
 
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 pt-1">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 pt-1 max-sm:flex-col max-sm:items-stretch max-sm:[&>*]:w-full max-sm:[&>div]:justify-between">
           <span className="font-display text-base whitespace-nowrap sm:text-lg font-extrabold text-primary">{formatPrice(product.price)}</span>
           {quantity > 0 ? (
             <QuantityStepper

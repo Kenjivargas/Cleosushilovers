@@ -56,7 +56,7 @@ export function MenuPage() {
                 className="scroll-mt-32 space-y-4 sm:scroll-mt-36"
               >
                 <SectionHeading id={`${categoryAnchorId(category.id)}-title`}>{category.name}</SectionHeading>
-                <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
                   {category.products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
